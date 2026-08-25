@@ -38,3 +38,32 @@ test('Records a SPARE => OPEN', t => {
 
   t.is(scoreKeeper.getCurrentScore(), 14)
 })
+
+test('Validates an OPEN score correctly', t => {
+  const scoreKeeper = new BowlingScoreKeeper()
+
+  t.throws(() => {
+    scoreKeeper.record({
+      type: FrameType.OPEN,
+      pins: [5, 5]
+    })
+  })
+
+  t.throws(() => {
+    scoreKeeper.record({
+      type: FrameType.OPEN,
+      pins: [10, 2]
+    })
+  })
+})
+
+test('Records an OPEN score correctly', t => {
+  const scoreKeeper = new BowlingScoreKeeper()
+
+  scoreKeeper.record({
+    type: FrameType.OPEN,
+    pins: [4, 5],
+  })
+
+  t.is(scoreKeeper.getCurrentScore(), 9)
+})

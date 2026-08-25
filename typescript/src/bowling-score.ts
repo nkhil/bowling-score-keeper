@@ -33,6 +33,7 @@ export class BowlingScoreKeeper {
   }
 
   record(frame: FrameScore): void {
+    this.validateFrame(frame)
     this.scoreCache.push(frame)
     this.incrementFrame()
   }
@@ -92,6 +93,15 @@ export class BowlingScoreKeeper {
     }
 
     return score
+  }
+
+  private validateFrame(frame: FrameScore): void {
+    if (frame.type === FrameType.OPEN && frame.pins) {
+      const score = this.calculateOpenFrameScore(frame.pins)
+      if (score >= 10) {
+        throw new Error('An open frame cannot have score that is equal to, or greater than 10')
+      }
+    }
   }
 
   private incrementFrame(): void {
