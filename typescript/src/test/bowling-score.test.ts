@@ -16,7 +16,7 @@ function createBowlingScoreKeeper(scores: Array<FrameScore> = []): BowlingScoreK
         break
       }
       case score.type === FrameType.SPARE: {
-        scoreKeeper.record({ type: FrameType.SPARE })
+        scoreKeeper.record({ type: FrameType.SPARE, pins: score.pins })
         break
       }
       case score.type === FrameType.OPEN: {
@@ -53,6 +53,7 @@ test('Records a SPARE => OPEN', t => {
   const scoreKeeper = createBowlingScoreKeeper([
     {
       type: FrameType.SPARE,
+      pins: [4, 6],
     },
     {
       type: FrameType.OPEN,
@@ -98,3 +99,26 @@ test('Records an OPEN score correctly', t => {
   t.is(scoreKeeper.getCurrentScore(), 9)
 })
 
+test('Records a STRIKE => SPARE', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    {
+      type: FrameType.STRIKE,
+    },
+    {
+      type: FrameType.SPARE,
+      pins: [5, 5],
+    }
+  ])
+
+  t.is(scoreKeeper.getCurrentScore(), 30)
+})
+
+test('Records a STRIKE => SPARE => OPEN', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.STRIKE },
+    { type: FrameType.SPARE, pins: [4, 6] },
+    { type: FrameType.OPEN, pins: [7, 2] },
+  ])
+
+  t.is(scoreKeeper.getCurrentScore(), 46)
+})

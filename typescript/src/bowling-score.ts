@@ -10,7 +10,14 @@ export enum FrameType {
 
 const ScoreSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal(FrameType.STRIKE) }),
-  z.object({ type: z.literal(FrameType.SPARE) }),
+  z.object({
+    type: z.literal(FrameType.SPARE),
+    pins: z
+      .tuple([z.number().nonnegative(), z.number().nonnegative()])
+      .refine(([a, b]) => a + b === 10, {
+        error: 'For a spare, the total should be exactly 10',
+      })
+  }),
   z.object({
     type: z.literal(FrameType.OPEN),
     pins: z
@@ -57,15 +64,18 @@ export class BowlingScoreKeeper {
         case FrameType.STRIKE: {
           score += 10
           const next = this.scoreCache[index + 1]
-          if (next.type === FrameType.OPEN) {
+          if (next?.type === FrameType.OPEN) {
             score += this.calculateOpenFrameScore(next.pins)
+          }
+          if (next?.type === FrameType.SPARE) {
+            score += 10
           }
           break
         }
         case FrameType.SPARE: {
           score += 10
           const next = this.scoreCache[index + 1]
-          if (next.type === FrameType.OPEN) {
+          if (next?.type === FrameType.OPEN) {
             score += next.pins[0]
           }
           break
@@ -96,12 +106,12 @@ export class BowlingScoreKeeper {
   }
 
   private validateFrame(frame: FrameScore): void {
-    if (frame.type === FrameType.OPEN && frame.pins) {
-      const score = this.calculateOpenFrameScore(frame.pins)
-      if (score >= 10) {
-        throw new Error('An open frame cannot have score that is equal to, or greater than 10')
-      }
+    const validationResult = ScoreSchema.safeParse(frame)
+
+    if (!validationResult.success) {
+      throw new Error(`${validationResult.error}`)
     }
+
   }
 
   private incrementFrame(): void {
