@@ -36,7 +36,7 @@ export class BowlingScoreKeeper {
   public scoreCache: Array<FrameScore> = []
 
   constructor() {
-    this.frameNumber = 1
+    this.frameNumber = 0
   }
 
   record(frame: FrameScore): void {
@@ -50,7 +50,7 @@ export class BowlingScoreKeeper {
       return { error: 'Game not finalised' }
     }
 
-    return { score: 0 }
+    return { score: this.getCurrentScore() }
   }
 
   public get score(): Array<FrameScore> {
@@ -115,8 +115,8 @@ export class BowlingScoreKeeper {
   }
 
   private incrementFrame(): void {
-    if (this.frameNumber >= 10) {
-      throw new Error('Rounds cannot exceed 9')
+    if (this.frameNumber === 10) {
+      console.log('This is frame 10, so no op')
     }
 
     this.frameNumber++
