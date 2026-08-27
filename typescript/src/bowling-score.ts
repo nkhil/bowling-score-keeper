@@ -1,7 +1,5 @@
 import z from 'zod'
 
-type RollType = 'STRIKE' | 'SPARE' | number
-
 export enum FrameType {
   STRIKE = 'STRIKE',
   SPARE = 'SPARE',
@@ -32,7 +30,6 @@ export type FrameScore = z.infer<typeof ScoreSchema>
 
 export class BowlingScoreKeeper {
   private frameNumber: number
-  public totalScore: number = 0
   public scoreCache: Array<FrameScore> = []
 
   constructor() {
