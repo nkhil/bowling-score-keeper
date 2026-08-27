@@ -50,10 +50,6 @@ export class BowlingScoreKeeper {
     return { score: this.getCurrentScore() }
   }
 
-  public get score(): Array<FrameScore> {
-    return this.scoreCache
-  }
-
   getCurrentScore(): number {
     let score = 0
     for (const [index, s] of this.scoreCache.entries()) {
