@@ -4,6 +4,7 @@ export enum FrameType {
   STRIKE = 'STRIKE',
   SPARE = 'SPARE',
   OPEN = 'OPEN',
+  TENTH = 'TENTH',
 }
 
 const ScoreSchema = z.discriminatedUnion('type', [
@@ -23,6 +24,23 @@ const ScoreSchema = z.discriminatedUnion('type', [
       .refine(([a, b]) => a + b < 10, {
         error: 'For an open frame, the total should be less than 10',
       }),
+  }),
+  z.object({
+    type: z.literal(FrameType.TENTH),
+    pins: z
+      .tuple([z.number().nonnegative(), z.number().nonnegative(), z.number().nonnegative().optional()])
+      .refine(roll => {
+        const [ a, b, c] = roll
+        const everyElementIsLessThanTen = roll.every(e => e !== undefined && e <= 10)
+        const isTurkey = a === 10 && b === 10 && c === 10
+        if (isTurkey) {
+          return everyElementIsLessThanTen && (a + b + c === 30)
+        }
+
+        return everyElementIsLessThanTen
+      }, {
+        error: 'For the final frame, the total should be less or equal to 30, and between 2 and 3 rolls'
+      })
   })
 ])
 
@@ -44,6 +62,7 @@ export class BowlingScoreKeeper {
 
   getFinalScore(): { error: string } | { score: number }  {
     if (this.frameNumber !== 10) {
+      console.log(`current frame number is ${this.frameNumber} and ${this.scoreCache.length}`)
       return { error: 'Game not finalised' }
     }
 
@@ -84,8 +103,31 @@ export class BowlingScoreKeeper {
           score += this.calculateOpenFrameScore(s.pins)
           break
         }
-        default: {
+        case FrameType.TENTH: {
+          const [first, second, third] = s.pins
+
+          if (first !== 10) {
+            const isSpare = first + second === 10
+            if (isSpare) {
+              score += first + second + (third ?? 0)
+              break
+            }
+            score += first + second
+            break
+          }
+
+          score += 10
+
+          if (second !== 10) {
+            score += second + (third ?? 0)
+            break
+          }
+
+          score += 10 + (third ?? 0)
           break
+        }
+        default: {
+          throw new Error('unexpected default case')
         }
       }
     }
