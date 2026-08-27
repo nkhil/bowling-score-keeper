@@ -139,3 +139,15 @@ test('Records a full game with OPEN frames', t => {
 
   t.deepEqual(scoreKeeper.getFinalScore(), { score: 48 })
 })
+
+test('Records STRIKE => STRIKE => OPEN', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.OPEN, pins: [7, 2] },
+  ])
+
+  t.is(scoreKeeper.getCurrentScore(), 55)
+})
+
+

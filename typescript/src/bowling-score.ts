@@ -63,6 +63,13 @@ export class BowlingScoreKeeper {
           if (next?.type === FrameType.SPARE) {
             score += 10
           }
+          if (next?.type === FrameType.STRIKE) {
+            score += 10
+            const frameAfterNext = this.scoreCache[index + 2]
+            if (frameAfterNext?.type === FrameType.OPEN) {
+              score += frameAfterNext.pins[0]
+            }
+          }
           break
         }
         case FrameType.SPARE: {
