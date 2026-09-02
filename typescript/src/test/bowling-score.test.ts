@@ -24,6 +24,14 @@ function createBowlingScoreKeeper(scores: Array<FrameScore> = []): BowlingScoreK
           throw new Error('Expected scores to be of length 2')
         }
         scoreKeeper.record({ type: FrameType.OPEN, pins: score.pins })
+        break
+      }
+      case score.type === FrameType.TENTH: {
+        scoreKeeper.record({
+          type: FrameType.TENTH,
+          pins: score.pins,
+        })
+        break
       }
     }
   }
@@ -138,4 +146,90 @@ test('Records a full game with OPEN frames', t => {
   ])
 
   t.deepEqual(scoreKeeper.getFinalScore(), { score: 48 })
+})
+
+test('Records STRIKE => STRIKE => OPEN', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.OPEN, pins: [7, 2] },
+  ])
+
+  t.is(scoreKeeper.getCurrentScore(), 55)
+})
+
+test('Handles a turkey in the tenth frame', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.TENTH, pins: [10, 10, 10] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), {
+    score: 30,
+  })
+})
+
+test('Handles a STRIKE in the tenth frame', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.TENTH, pins: [10, 1, 1] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), {
+    score: 12,
+  })
+})
+
+test('Handles a spare in tenth frame', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.TENTH, pins: [7, 3, 10] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), {
+    score: 20,
+  })
+})
+
+test('Handles an OPEN in the last frame', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.TENTH, pins: [7, 2] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), {
+    score: 9,
+  })
 })
