@@ -56,14 +56,10 @@ export class BowlingScoreKeeper {
 
   rollsFromFrame(f: FrameScore): Array<number> {
     switch (f.type) {
-      case FrameType.STRIKE: { return [10]
-      }
-      case FrameType.SPARE: { return [f.pins[0], f.pins[1]]
-      }
-      case FrameType.OPEN: { return [f.pins[0], f.pins[1]]
-      }
-      case FrameType.TENTH: { return f.pins.map(p => p ?? 0)
-      }
+      case FrameType.STRIKE: { return [10] }
+      case FrameType.SPARE: { return [f.pins[0], f.pins[1]] }
+      case FrameType.OPEN: { return [f.pins[0], f.pins[1]] }
+      case FrameType.TENTH: { return f.pins.map(p => p ?? 0) }
     }
   }
 
@@ -88,7 +84,7 @@ export class BowlingScoreKeeper {
     return { score: this.scoreFrames(0) }
   }
 
-  getRollOffset(frame: number): number {
+  private getRollOffset(frame: number): number {
     let offset = 0
     for (let i = 0; i < frame; i++) {
       offset += this.rollsFromFrame(this.scoreCache[i]).length
@@ -96,7 +92,7 @@ export class BowlingScoreKeeper {
     return offset
   }
 
-  scoreFrames(index: number): number {
+  private scoreFrames(index: number): number {
     const frame = this.scoreCache[index]
     if (!frame) { return 0 }
 
@@ -121,7 +117,7 @@ export class BowlingScoreKeeper {
     }
   }
 
-  getRollValueAtIndex(index: number): number {
+  private getRollValueAtIndex(index: number): number {
     const roll = this.rolls[index]
     return roll ?? 0
   }
