@@ -158,6 +158,16 @@ test('Records STRIKE => STRIKE => OPEN', t => {
   t.is(scoreKeeper.getCurrentScore(), 55)
 })
 
+test('Returns error for incomplete game in getFinalScore', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.OPEN, pins: [1, 1] },
+    { type: FrameType.OPEN, pins: [2, 2] },
+    { type: FrameType.OPEN, pins: [3, 3] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), { error: 'Game not finalised' })
+})
+
 test('Handles a turkey in the tenth frame', t => {
   const scoreKeeper = createBowlingScoreKeeper([
     { type: FrameType.OPEN, pins: [0, 0] },

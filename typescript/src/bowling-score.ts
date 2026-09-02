@@ -131,6 +131,5 @@ export class BowlingScoreKeeper {
 
     if (!validationResult.success) {
       throw new Error(`${validationResult.error}`)
-    }
-  }
+    }}
 }
