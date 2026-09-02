@@ -168,6 +168,23 @@ test('Returns error for incomplete game in getFinalScore', t => {
   t.deepEqual(scoreKeeper.getFinalScore(), { error: 'Game not finalised' })
 })
 
+test('Handles a perfect game', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.STRIKE },
+    { type: FrameType.TENTH, pins: [10, 10, 10] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), { score: 300 })
+})
+
 test('Handles a turkey in the tenth frame', t => {
   const scoreKeeper = createBowlingScoreKeeper([
     { type: FrameType.OPEN, pins: [0, 0] },
