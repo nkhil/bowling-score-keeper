@@ -1,7 +1,7 @@
 import { input, confirm } from '@inquirer/prompts'
 
-import { FrameType } from '../bowling-score.js'
-import { Person } from '../person.js'
+import { FrameType } from './bowling-score.js'
+import { Person } from './person.js'
 
 const numOfPlayersAnswer = await input({
   message: 'How many players?',
