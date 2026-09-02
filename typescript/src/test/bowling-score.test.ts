@@ -215,7 +215,7 @@ test('Handles a spare in tenth frame', t => {
   })
 })
 
-test.only('Handles an OPEN in the last frame', t => {
+test('Handles an OPEN in the last frame', t => {
   const scoreKeeper = createBowlingScoreKeeper([
     { type: FrameType.OPEN, pins: [0, 0] },
     { type: FrameType.OPEN, pins: [0, 0] },

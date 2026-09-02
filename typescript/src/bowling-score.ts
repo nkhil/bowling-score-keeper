@@ -47,17 +47,36 @@ const ScoreSchema = z.discriminatedUnion('type', [
 export type FrameScore = z.infer<typeof ScoreSchema>
 
 export class BowlingScoreKeeper {
-  private frameNumber: number
   public scoreCache: Array<FrameScore> = []
-
-  constructor() {
-    this.frameNumber = 0
-  }
 
   record(frame: FrameScore): void {
     this.validateFrame(frame)
     this.scoreCache.push(frame)
-    this.incrementFrame()
+  }
+
+  rollsFromFrame(f: FrameScore): Array<number> {
+    switch (f.type) {
+      case FrameType.STRIKE: { return [10]
+      }
+      case FrameType.SPARE: { return [f.pins[0], f.pins[1]]
+      }
+      case FrameType.OPEN: { return [f.pins[0], f.pins[1]]
+      }
+      case FrameType.TENTH: { return f.pins.map(p => p ?? 0)
+      }
+    }
+  }
+
+  private get rolls(): Array<number> {
+    return this.scoreCache.flatMap((el: FrameScore) => this.rollsFromFrame(el))
+  }
+
+  private get frameNumber(): number {
+    return this.scoreCache.length
+  }
+
+  getCurrentScore(): number {
+    return this.scoreFrames(0)
   }
 
   getFinalScore(): { error: string } | { score: number }  {
@@ -66,85 +85,45 @@ export class BowlingScoreKeeper {
       return { error: 'Game not finalised' }
     }
 
-    return { score: this.getCurrentScore() }
+    return { score: this.scoreFrames(0) }
   }
 
-  getCurrentScore(): number {
-    let score = 0
-    for (const [index, s] of this.scoreCache.entries()) {
-      switch (s.type) {
-        case FrameType.STRIKE: {
-          score += 10
-          const next = this.scoreCache[index + 1]
-          if (next?.type === FrameType.OPEN) {
-            score += this.calculateOpenFrameScore(next.pins)
-          }
-          if (next?.type === FrameType.SPARE) {
-            score += 10
-          }
-          if (next?.type === FrameType.STRIKE) {
-            score += 10
-            const frameAfterNext = this.scoreCache[index + 2]
-            if (frameAfterNext?.type === FrameType.OPEN) {
-              score += frameAfterNext.pins[0]
-            }
-          }
-          break
-        }
-        case FrameType.SPARE: {
-          score += 10
-          const next = this.scoreCache[index + 1]
-          if (next?.type === FrameType.OPEN) {
-            score += next.pins[0]
-          }
-          break
-        }
-        case FrameType.OPEN: {
-          score += this.calculateOpenFrameScore(s.pins)
-          break
-        }
-        case FrameType.TENTH: {
-          const [first, second, third] = s.pins
+  getRollOffset(frame: number): number {
+    let offset = 0
+    for (let i = 0; i < frame; i++) {
+      offset += this.rollsFromFrame(this.scoreCache[i]).length
+    }
+    return offset
+  }
 
-          if (first !== 10) {
-            const isSpare = first + second === 10
-            if (isSpare) {
-              score += first + second + (third ?? 0)
-              break
-            }
-            score += first + second
-            break
-          }
+  scoreFrames(index: number): number {
+    const frame = this.scoreCache[index]
+    if (!frame) { return 0 }
 
-          score += 10
+    const rollsSoFar = this.getRollOffset(index)
 
-          if (second !== 10) {
-            score += second + (third ?? 0)
-            break
-          }
-
-          score += 10 + (third ?? 0)
-          break
-        }
-        default: {
-          throw new Error('unexpected default case')
-        }
+    switch (frame.type) {
+      case FrameType.STRIKE: {
+        return 10 + this.getRollValueAtIndex(rollsSoFar + 1) + this.getRollValueAtIndex(rollsSoFar + 2) + this.scoreFrames(index + 1)
+      }
+      case FrameType.SPARE: {
+        return 10 + this.getRollValueAtIndex(rollsSoFar + 2) + this.scoreFrames(index + 1)
+      }
+      case FrameType.OPEN: {
+        return frame.pins[0] + frame.pins[1] + this.scoreFrames(index + 1)
+      }
+      case FrameType.TENTH: {
+        return frame.pins.reduce<number>((acc, v) => {
+          if (v === undefined) return acc
+          return acc + v
+        }, 0)
       }
     }
-    return score
   }
 
-  private calculateOpenFrameScore(pins: Array<number>): number {
-    if (pins.length !== 2) {
-      throw new Error('Expected pins to be of exactly 2 length')
-    }
-
-    let score = 0
-    for (const pin of pins) {
-      score += pin
-    }
-
-    return score
+  getRollValueAtIndex(index: number): number {
+    const roll = this.rolls[index]
+    return roll ?? 0
   }
 
   private validateFrame(frame: FrameScore): void {
@@ -153,14 +132,5 @@ export class BowlingScoreKeeper {
     if (!validationResult.success) {
       throw new Error(`${validationResult.error}`)
     }
-
-  }
-
-  private incrementFrame(): void {
-    if (this.frameNumber === 10) {
-      console.log('This is frame 10, so no op')
-    }
-
-    this.frameNumber++
   }
 }
