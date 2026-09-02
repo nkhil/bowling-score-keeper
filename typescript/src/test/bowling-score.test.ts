@@ -202,6 +202,23 @@ test('Handles an all spares game', t => {
   t.deepEqual(scoreKeeper.getFinalScore(), { score: 150 })
 })
 
+test('Handles an all gutter balls game', t => {
+  const scoreKeeper = createBowlingScoreKeeper([
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.OPEN, pins: [0, 0] },
+    { type: FrameType.TENTH, pins: [0, 0] },
+  ])
+
+  t.deepEqual(scoreKeeper.getFinalScore(), { score: 0 })
+})
+
 test('Handles a turkey in the tenth frame', t => {
   const scoreKeeper = createBowlingScoreKeeper([
     { type: FrameType.OPEN, pins: [0, 0] },
